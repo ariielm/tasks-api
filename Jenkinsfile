@@ -1,28 +1,56 @@
+def remote = [:]
+    remote.name = "ariielm-server"
+    remote.host = "104.236.41.39"
+    remote.allowAnyHosts = true
+
 pipeline {
-   agent any
+    agent any
 
-   tools {
-      maven "3"
-   }
+    tools {
+        maven "3"
+    }
 
-   stages {
-      stage('Build') {
-         steps {
-            git branch: 'master',
-                credentialsId: 'GitHub',
-                url: 'git@github.com:ariielm/tasks-api.git'
+    stages {
+        stage('git clone') {
+            steps {
+                git branch: 'master',
+                    credentialsId: 'GitHub',
+                    url: 'git@github.com:ariielm/tasks-api.git'
+            }
+        }
 
-            sh "mvn clean package"
-         }
+        stage('build & tests') {
+            steps {
+                sh "mvn clean package"
+            }
 
-//          post {
-//             // If Maven was able to run the tests, even if some of the test
-//             // failed, record the test results and archive the jar file.
-//             success {
-//                junit '**/target/surefire-reports/TEST-*.xml'
-//                archiveArtifacts 'target/*.jar'
+            post {
+                success {
+                    junit '**/target/surefire-reports/TEST-*.xml'
+                    archiveArtifacts 'target/tasks-api*.jar'
+                }
+            }
+        }
+
+//         stage('release docker image') {
+//             steps {
+//
 //             }
-//          }
-      }
-   }
+//         }
+
+        stage('deploy') {
+            steps {
+                withCredentials([sshUserPrivateKey(credentialsId: 'GitHub', keyFileVariable: 'identity', passphraseVariable: 'passphrase', usernameVariable: 'userName')]) {
+                    script {
+                        remote.user = userName
+                        remote.identityFile = identity
+                        remote.passphrase = passphrase
+                    }
+
+                    sshPut remote: remote, from: 'target/tasks-api-0.0.1-SNAPSHOT.jar', into: '.'
+                }
+            }
+        }
+    }
+
 }
