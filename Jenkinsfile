@@ -7,7 +7,7 @@ pipeline {
     agent any
 
     tools {
-        maven "3"
+        maven "M3"
     }
 
     stages {
@@ -32,22 +32,31 @@ pipeline {
             }
         }
 
-//         stage('release docker image') {
-//             steps {
-//
-//             }
-//         }
+        stage('build & deploy docker image') {
+            steps {
+                script {
+                    docker.withTool("docker-latest") {
+                        docker.withRegistry('https://index.docker.io/v1/','dockerhub-credentials') {
+                            def tasksApiImage = docker.build("ariielm/tasks-api")
+                            tasksApiImage.push()
+                        }
+                    }
+                }
+            }
+        }
 
         stage('deploy') {
             steps {
-                withCredentials([sshUserPrivateKey(credentialsId: 'GitHub', keyFileVariable: 'identity', passphraseVariable: 'passphrase', usernameVariable: 'userName')]) {
+                withCredentials([sshUserPrivateKey(credentialsId: 'SSH-ariielm-server', keyFileVariable: 'identity', passphraseVariable: 'passphrase', usernameVariable: 'userName')]) {
                     script {
                         remote.user = userName
                         remote.identityFile = identity
                         remote.passphrase = passphrase
                     }
 
-                    sshPut remote: remote, from: 'target/tasks-api-0.0.1-SNAPSHOT.jar', into: '.'
+                    sshPut remote: remote, from: 'deploy.py', into: '.'
+                    sshCommand remote: remote, command: 'python deploy.py'
+
                 }
             }
         }
