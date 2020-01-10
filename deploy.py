@@ -11,9 +11,9 @@ os.environ['DOCKER_HOST'] = 'unix://' + os.environ.get('XDG_RUNTIME_DIR') + '/do
 def isApplicationRunning():
     output = check_output(["docker", "ps", "-a"])
     if output.find('ariielm/tasks-api') != -1:
-        return False
-    else:
         return True
+    else:
+        return False
 
 
 if isApplicationRunning():
