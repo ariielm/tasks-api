@@ -20,4 +20,4 @@ if isApplicationRunning():
     os.system("docker rm -f backend")
 
 os.system("docker pull ariielm/tasks-api")
-os.system("docker run --name backend -d -p 8080 --link nginx --net arielmolinacom_default ariielm/tasks-api")
+os.system("docker run --name backend -d --link nginx --net arielmolinacom_default ariielm/tasks-api")
