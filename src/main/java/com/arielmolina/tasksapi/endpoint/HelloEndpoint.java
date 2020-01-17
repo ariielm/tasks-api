@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class HelloEndpoint {
 
-    @GetMapping
+    @GetMapping("/api")
     public String welcome() {
         return "<h1>Welcome!</h1>";
     }
