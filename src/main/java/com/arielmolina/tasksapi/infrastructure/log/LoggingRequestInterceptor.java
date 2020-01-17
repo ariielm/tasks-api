@@ -27,8 +27,8 @@ public class LoggingRequestInterceptor extends HandlerInterceptorAdapter {
 
         long startTime = (Long) request.getAttribute("startTime");
 
-        logger.info(", url=" + request.getRequestURL() +
+        logger.info("url=" + request.getRequestURL() +
                 ", time=" + (Instant.now().toEpochMilli() - startTime) +
-                ", uri=" + request.getRequestURI());
+                ", http_status=" + response.getStatus());
     }
 }
